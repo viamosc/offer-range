@@ -23,6 +23,11 @@
   .row span { color:var(--muted); font-size:14px; }
   .row strong { font-size:22px; color:var(--accent); }
   .tier { font-size:13px; color:var(--muted); margin-bottom:4px; }
+  .copy-block { margin-top:20px; display:none; }
+  .copy-row { display:flex; gap:8px; }
+  .copy-row input { flex:1; font-size:18px; }
+  .copy-row button { border:1px solid var(--line); background:var(--accent); color:#fff; border-radius:8px; padding:12px 14px; font-weight:600; cursor:pointer; }
+  .copy-row button:hover { filter:brightness(1.05); }
 </style>
 </head>
 <body>
@@ -34,6 +39,13 @@
       <div class="tier" id="tier"></div>
       <div class="row"><span id="lo-l"></span><strong id="lo"></strong></div>
       <div class="row"><span id="hi-l"></span><strong id="hi"></strong></div>
+    </div>
+    <div class="copy-block" id="copyBlock">
+      <label for="copyRange">Copyable offer range</label>
+      <div class="copy-row">
+        <input id="copyRange" type="text" readonly>
+        <button type="button" id="copyBtn">Copy</button>
+      </div>
     </div>
   </div>
 
@@ -55,18 +67,53 @@
   }
 
   const fmt = n => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  const compact = n => {
+    if (n >= 1_000_000) {
+      const m = n / 1_000_000;
+      return `${m >= 10 || Number.isInteger(m) ? m.toFixed(0) : m.toFixed(1).replace(/\.0$/, '')}m`;
+    }
+    const k = n / 1_000;
+    return `${k >= 10 || Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1).replace(/\.0$/, '')}k`;
+  };
+
+  const copyBlock = document.getElementById("copyBlock");
+  const copyRange = document.getElementById("copyRange");
 
   document.getElementById("v").addEventListener("input", e => {
     const res = document.getElementById("res");
     const val = parse(e.target.value);
-    if (!val || val <= 0) { res.style.display = "none"; return; }
+    if (!val || val <= 0) {
+      res.style.display = "none";
+      copyBlock.style.display = "none";
+      return;
+    }
     const t = tiers.find(t => val <= t.max);
+    const lo = val * t.lo;
+    const hi = val * t.hi;
+
     document.getElementById("tier").textContent = "Tier: " + t.name;
     document.getElementById("lo-l").textContent = Math.round(t.lo * 100) + "%";
     document.getElementById("hi-l").textContent = Math.round(t.hi * 100) + "%";
-    document.getElementById("lo").textContent = fmt(val * t.lo);
-    document.getElementById("hi").textContent = fmt(val * t.hi);
+    document.getElementById("lo").textContent = fmt(lo);
+    document.getElementById("hi").textContent = fmt(hi);
+
+    copyRange.value = `${compact(lo)} - ${compact(hi)}`;
+    copyBlock.style.display = "block";
     res.style.display = "block";
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(copyRange.value);
+      document.getElementById("copyBtn").textContent = "Copied";
+      setTimeout(() => document.getElementById("copyBtn").textContent = "Copy", 1200);
+    } catch (err) {
+      copyRange.focus();
+      copyRange.select();
+      document.execCommand("copy");
+      document.getElementById("copyBtn").textContent = "Copied";
+      setTimeout(() => document.getElementById("copyBtn").textContent = "Copy", 1200);
+    }
   });
 </script>
 </body>
