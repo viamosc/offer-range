@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offer Range Calculator</title>
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --text:#1c2430; --muted:#6b7686; --accent:#1f6f5c; --line:#dde1e7; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14181d; --card:#1d232a; --text:#eef1f4; --muted:#98a3b1; --accent:#5cc7a8; --line:#2d353e; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; padding:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:28px; width:100%; max-width:420px; }
+  h1 { font-size:20px; margin:0 0 20px; }
+  label { display:block; font-size:14px; color:var(--muted); margin-bottom:6px; }
+  input { width:100%; font-size:20px; padding:12px; border:1px solid var(--line); border-radius:8px;
+          background:var(--bg); color:var(--text); }
+  input:focus { outline:2px solid var(--accent); }
+  .result { margin-top:24px; display:none; }
+  .row { display:flex; justify-content:space-between; align-items:baseline; padding:12px 0; border-top:1px solid var(--line); }
+  .row span { color:var(--muted); font-size:14px; }
+  .row strong { font-size:22px; color:var(--accent); }
+  .tier { font-size:13px; color:var(--muted); margin-bottom:4px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Offer Range Calculator</h1>
+    <label for="v">Expected resale</label>
+    <input id="v" type="text" inputmode="decimal" placeholder="e.g. 300k or 300000" autofocus>
+    <div class="result" id="res">
+      <div class="tier" id="tier"></div>
+      <div class="row"><span id="lo-l"></span><strong id="lo"></strong></div>
+      <div class="row"><span id="hi-l"></span><strong id="hi"></strong></div>
+    </div>
+  </div>
+
+<script>
+  const tiers = [
+    { max: 250000,   lo: 0.45, hi: 0.60, name: "0 – 250k" },
+    { max: 500000,   lo: 0.60, hi: 0.70, name: "250k – 500k" },
+    { max: 1000000,  lo: 0.65, hi: 0.75, name: "500k – 1m" },
+    { max: Infinity, lo: 0.70, hi: 0.80, name: "1m+" }
+  ];
+
+  function parse(s) {
+    s = s.toLowerCase().replace(/[, ]/g, "");
+    let m = 1;
+    if (s.endsWith("k")) { m = 1e3; s = s.slice(0, -1); }
+    else if (s.endsWith("m")) { m = 1e6; s = s.slice(0, -1); }
+    const n = parseFloat(s);
+    return isNaN(n) ? null : n * m;
+  }
+
+  const fmt = n => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+  document.getElementById("v").addEventListener("input", e => {
+    const res = document.getElementById("res");
+    const val = parse(e.target.value);
+    if (!val || val <= 0) { res.style.display = "none"; return; }
+    const t = tiers.find(t => val <= t.max);
+    document.getElementById("tier").textContent = "Tier: " + t.name;
+    document.getElementById("lo-l").textContent = Math.round(t.lo * 100) + "%";
+    document.getElementById("hi-l").textContent = Math.round(t.hi * 100) + "%";
+    document.getElementById("lo").textContent = fmt(val * t.lo);
+    document.getElementById("hi").textContent = fmt(val * t.hi);
+    res.style.display = "block";
+  });
+</script>
+</body>
+</html>
