@@ -41,7 +41,7 @@
       <div class="row"><span id="hi-l"></span><strong id="hi"></strong></div>
     </div>
     <div class="copy-block" id="copyBlock">
-      <label for="copyRange">Copyable offer range</label>
+      <label for="copyRange">You may copy this shi bro</label>
       <div class="copy-row">
         <input id="copyRange" type="text" readonly>
         <button type="button" id="copyBtn">Copy</button>
@@ -68,12 +68,9 @@
 
   const fmt = n => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
   const compact = n => {
-    if (n >= 1_000_000) {
-      const m = n / 1_000_000;
-      return `${m >= 10 || Number.isInteger(m) ? m.toFixed(0) : m.toFixed(1).replace(/\.0$/, '')}m`;
-    }
-    const k = n / 1_000;
-    return `${k >= 10 || Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1).replace(/\.0$/, '')}k`;
+    const exact = Math.round(n);
+    if (exact % 1000 === 0) return `${exact / 1000}k`;
+    return exact.toLocaleString();
   };
 
   const copyBlock = document.getElementById("copyBlock");
