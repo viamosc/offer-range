@@ -76,6 +76,13 @@
   const copyBlock = document.getElementById("copyBlock");
   const copyRange = document.getElementById("copyRange");
 
+  function getTier(value) {
+    if (value >= 1000000) return tiers[3];
+    if (value >= 500000) return tiers[2];
+    if (value >= 250000) return tiers[1];
+    return tiers[0];
+  }
+
   document.getElementById("v").addEventListener("input", e => {
     const res = document.getElementById("res");
     const val = parse(e.target.value);
@@ -84,7 +91,7 @@
       copyBlock.style.display = "none";
       return;
     }
-    const t = tiers.find(t => val <= t.max);
+    const t = getTier(val);
     const lo = val * t.lo;
     const hi = val * t.hi;
 
